@@ -1,165 +1,433 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Raiz Barbearia - Painel Administrativo Completo</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #F7F5F0; color: #1A1D1A; font-family: sans-serif; }
-        .bg-forest { background-color: #1C4332 !important; }
-        .card { border-radius: 14px; border: 1px solid #E6E2D8; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raiz Barbearia · Gestão Web</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --bg: #F7F5F0;
+      --surface: #FFFFFF;
+      --border: #E6E2D8;
+      --green: #1C4332;
+      --green-hover: #143225;
+      --green-light: #E8EFEA;
+      --text: #1A1D1A;
+      --muted: #6B726D;
+      --red: #C84B31;
+      --input-bg: #F2EFE9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 15;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--green);
+      color: #fff;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+    }
+
+    .brand h1 { font-family: 'Playfair Display', serif; font-size: 18px; letter-spacing: 1px; }
+    .brand span { font-size: 10px; letter-spacing: 1.5px; color: var(--muted); display: block; }
+
+    .header-right {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 10px;
+      border-radius: 20px;
+      background: var(--input-bg);
+      color: var(--muted);
+    }
+
+    .status-pill.online {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .status-pill.erro {
+      background: #FDECE8;
+      color: var(--red);
+    }
+
+    .nav-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: var(--input-bg);
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .nav-tab {
+      border: none;
+      background: transparent;
+      padding: 8px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .nav-tab.active {
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover { background: var(--green-hover); }
+
+    .container { max-width: 1140px; margin: 0 auto; padding: 26px 20px; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .page-title { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 4px; }
+    .page-subtitle { color: var(--muted); font-size: 14px; }
+
+    .toast-banner {
+      display: none;
+      background: var(--green);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toast-banner.show { display: flex; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .stat-value { font-size: 24px; font-weight: 700; }
+    .stat-hint { font-size: 11px; color: var(--green); margin-top: 4px; font-weight: 500; }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .period-btns, .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+      font-weight: 600;
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      height: 230px;
+      padding-top: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+      min-width: 44px;
+    }
+
+    .bar-val {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      white-space: nowrap;
+    }
+
+    .bar-fill {
+      width: 100%;
+      max-width: 52px;
+      background: var(--green);
+      border-radius: 8px 8px 0 0;
+      min-height: 6px;
+      transition: height 0.3s ease;
+    }
+
+    .bar-fill.empty-bar { background: var(--border); }
+
+    .bar-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow-x: auto;
+    }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+
+    th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #FAF9F6;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .badge.inactive { background: #EFECE6; color: var(--muted); }
+    .badge.warn { background: #FDECE8; color: var(--red); }
+    .badge.star { background: #FEF3C7; color: #B45309; }
+
+    .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .btn-sm {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn-sm:hover { background: var(--input-bg); }
+    .btn-sm.danger { color: var(--red); border-color: #F3C6BC; }
+
+    .barber-tag {
+      display: inline-block;
+      background: var(--input-bg);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      margin: 2px 4px 2px 0;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      place-items: center;
+      padding: 16px;
+      z-index: 30;
+    }
+
+    .modal-backdrop.open { display: grid; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 450px;
+      border: 1px solid var(--border);
+    }
+
+    .modal h3 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 14px; }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+
+    .field input, .field select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .checkbox-group { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .checkbox-item input { width: auto; }
+
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+  </style>
 </head>
 <body>
-
-    <!-- Barra de Navegação -->
-    <nav class="navbar navbar-dark bg-forest shadow-sm mb-4">
-        <div class="container-fluid px-4">
-            <span class="navbar-brand mb-0 h1">🌿 RAIZ BARBEARIA — Painel Administrativo</span>
-            <span class="text-white small">Gestão Geral & Avaliações</span>
-        </div>
-    </nav>
-
-    <div class="container pb-5">
-        
-        <!-- Estatísticas Principais -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-6">
-                <div class="card p-3 bg-white">
-                    <h6 class="text-muted mb-1">Média Geral de Avaliações</h6>
-                    <h3 id="mediaEstrelas" class="fw-bold text-success mb-0">Calculando...</h3>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card p-3 bg-white">
-                    <h6 class="text-muted mb-1">Total de Avaliações Recebidas</h6>
-                    <h3 id="totalAvaliacoesCount" class="fw-bold text-dark mb-0">0</h3>
-                </div>
-            </div>
-        </div>
-
-        <!-- Secção de Agendamentos e Gestão -->
-        <div class="card mb-4">
-            <div class="card-header bg-forest text-white py-3">
-                <h5 class="mb-0">📅 Agendamentos Atuais</h5>
-            </div>
-            <div class="card-body">
-                <div id="listaAgendamentos" class="list-group">
-                    <p class="text-muted text-center py-3">A carregar agendamentos do Firestore...</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Secção de Avaliações e Feedback dos Clientes -->
-        <div class="card mb-4">
-            <div class="card-header bg-forest text-white d-flex justify-content-between align-items-center py-3">
-                <h5 class="mb-0">⭐ Avaliações e Feedback dos Clientes</h5>
-                <span class="badge bg-light text-dark fs-6">Tempo Real</span>
-            </div>
-            <div class="card-body">
-                <div id="listaAvaliacoes" class="list-group">
-                    <p class="text-muted text-center py-4">A carregar avaliações...</p>
-                </div>
-            </div>
-        </div>
-
+  <header>
+    <div class="brand">
+      <div class="brand-icon">R</div>
+      <div>
+        <h1>RAIZ</h1>
+        <span>BARBEARIA · ADMINISTRAÇÃO</span>
+      </div>
     </div>
 
-    <!-- Firebase SDKs (Compat version) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <div class="header-right">
+      <nav class="nav-tabs">
+        <button type="button" class="nav-tab active" data-tab="painel">Painel de Controle</button>
+        <button type="button" class="nav-tab" data-tab="agenda">Agenda & Comandas</button>
+        <button type="button" class="nav-tab" data-tab="catalogo">Catálogo de Serviços</button>
+        <button type="button" class="nav-tab" data-tab="funcionarios">Funcionários</button>
+        <button type="button" class="nav-tab" data-tab="avaliacoes">Avaliações</button>
+      </nav>
+      <span class="status-pill" id="firebase-status">Conectando...</span>
+    </div>
+  </header>
 
-    <script>
-        // Configuração do Firebase (Certifique-se de usar as chaves corretas do seu projeto)
-        const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_AUTH_DOMAIN",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_STORAGE_BUCKET",
-            messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-            appId: "SEU_APP_ID"
-        };
+  <main class="container">
+    <div class="toast-banner" id="toast-alerta">
+      <span id="toast-texto">Atualização recebida em tempo real.</span>
+      <button type="button" class="btn-sm" onclick="fecharAlerta()">Fechar</button>
+    </div>
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.firestore();
+    <section class="section active" id="sec-painel">
+      <div class="section-header">
+        <div>
+          <h2 class="page-title">Painel de Controle</h2>
+          <p class="page-subtitle">Indicadores rápidos e evolução de faturamento da barbearia.</p>
+        </div>
+      </div>
 
-        // Sincronização em tempo real com a coleção 'agendamentos'
-        db.collection("agendamentos").onSnapshot((snapshot) => {
-            const containerAgendamentos = document.getElementById("listaAgendamentos");
-            if (!containerAgendamentos) return;
-            
-            containerAgendamentos.innerHTML = "";
-            if (snapshot.empty) {
-                containerAgendamentos.innerHTML = `<p class="text-muted text-center py-3">Nenhum agendamento registado no momento.</p>`;
-                return;
-            }
+      <div class="stats-grid">
+        <div class="card">
+          <div class="stat-label">Agendamentos válidos</div>
+          <div class="stat-value" id="kpi-agendamentos">0</div>
+          <div class="stat-hint" id="kpi-concluidos">0 concluídos</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Ticket médio</div>
+          <div class="stat-value" id="kpi-ticket">R$ 0,00</div>
+          <div class="stat-hint">Serviços + comandas na cadeira</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Taxa de ocupação</div>
+          <div class="stat-value" id="kpi-ocupacao">0%</div>
+          <div class="stat-hint" id="kpi-capacidade">Capacidade baseada na equipe ativa</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Faturamento acumulado</div>
+          <div class="stat-value" id="kpi-faturacao">R$ 0,00</div>
+          <div class="stat-hint">Atualizado em tempo real</div>
+        </div>
+      </div>
 
-            let htmlAgendamentos = "";
-            snapshot.forEach((doc) => {
-                const ag = doc.data();
-                htmlAgendamentos += `
-                    <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3 mb-2 rounded border">
-                        <div>
-                            <h6 class="mb-1 fw-bold text-success">${ag.clienteNome || "Cliente"} (${ag.clienteTelefone || ""})</h6>
-                            <p class="mb-1 text-dark">Serviço: <strong>${ag.servico?.nome || "Corte"}</strong> com ${ag.profissional?.nome || "Geral"}</p>
-                            <small class="text-muted">Horário: ${ag.dataTexto || ""} às ${ag.horario || ""}</small>
-                        </div>
-                        <span class="badge bg-success">${ag.status || "Confirmado"}</span>
-                    </div>
-                `;
-            });
-            containerAgendamentos.innerHTML = htmlAgendamentos;
-        });
-
-        // Sincronização em tempo real com a coleção 'avaliacoes'
-        db.collection("avaliacoes").onSnapshot((snapshot) => {
-            const listaContainer = document.getElementById("listaAvaliacoes");
-            const elemMedia = document.getElementById("mediaEstrelas");
-            const elemTotal = document.getElementById("totalAvaliacoesCount");
-            
-            if (!listaContainer) return;
-            listaContainer.innerHTML = "";
-            
-            if (snapshot.empty) {
-                listaContainer.innerHTML = `<p class="text-muted text-center py-4">Ainda não existem avaliações registadas.</p>`;
-                if (elemMedia) elemMedia.innerText = "- ⭐";
-                if (elemTotal) elemTotal.innerText = "0";
-                return;
-            }
-
-            let somaEstrelas = 0;
-            let totalAvaliacoes = snapshot.size;
-            let htmlContent = "";
-
-            snapshot.forEach((doc) => {
-                const aval = doc.data();
-                const estrelas = aval.estrelas || 5;
-                somaEstrelas += estrelas;
-                const estrelasVisuais = "⭐".repeat(estrelas);
-
-                htmlContent += `
-                    <div class="list-group-item list-group-item-action flex-column align-items-start mb-2 rounded border p-3">
-                        <div class="d-flex w-100 justify-content-between align-items-center">
-                            <h5 class="mb-1 text-success fw-bold">${aval.clienteNome || "Cliente"}</h5>
-                            <span class="badge bg-warning text-dark">${estrelasVisuais} (${estrelas}/5)</span>
-                        </div>
-                        <p class="mb-1 text-dark mt-2">"${aval.comentario || "O cliente não deixou comentário adicional."}"</p>
-                        <small class="text-muted">Barbeiro avaliado: <strong>${aval.profissionalNome || "Geral"}</strong></small>
-                    </div>
-                `;
-            });
-
-            const mediaGeral = (somaEstrelas / totalAvaliacoes).toFixed(1);
-            if (elemMedia) elemMedia.innerText = `${mediaGeral} ⭐`;
-            if (elemTotal) elemTotal.innerText = totalAvaliacoes;
-            
-            listaContainer.innerHTML = htmlContent;
-        });
-    </script>
-</body>
-</html>
+      <div class="card">
+        <div class="chart-header">
+          <div>
+            <strong>Gráfico de Faturamento Real</strong>
+            <div style="
