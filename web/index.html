@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Raiz Barbearia · Gestão Web</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F7F5F0;
+      --surface: #FFFFFF;
+      --border: #E6E2D8;
+      --green: #1C4332;
+      --green-hover: #143225;
+      --green-light: #E8EFEA;
+      --text: #1A1D1A;
+      --muted: #6B726D;
+      --red: #C84B31;
+      --input-bg: #F2EFE9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 15;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--green);
+      color: #fff;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+    }
+
+    .brand h1 { font-family: 'Playfair Display', serif; font-size: 18px; letter-spacing: 1px; }
+    .brand span { font-size: 10px; letter-spacing: 1.5px; color: var(--muted); display: block; }
+
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--input-bg);
+      padding: 4px;
+      border-radius: 12px;
+    }
+
+    .nav-tab {
+      border: none;
+      background: transparent;
+      padding: 8px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .nav-tab.active {
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover { background: var(--green-hover); }
+
+    .container { max-width: 1140px; margin: 0 auto; padding: 26px 20px; }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .page-title { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 4px; }
+    .page-subtitle { color: var(--muted); font-size: 14px; }
+
+    .toast-banner {
+      display: none;
+      background: var(--green);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toast-banner.show { display: flex; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .stat-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .stat-value { font-size: 24px; font-weight: 700; }
+    .stat-hint { font-size: 11px; color: var(--green); margin-top: 4px; font-weight: 500; }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .period-btns { display: flex; gap: 6px; }
+
+    .chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+      font-weight: 600;
+    }
+
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 14px;
+      height: 210px;
+      padding-top: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+    }
+
+    .bar-val { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+
+    .bar-fill {
+      width: 100%;
+      max-width: 48px;
+      background: var(--green);
+      border-radius: 8px 8px 0 0;
+      min-height: 8px;
+      transition: height 0.3s ease;
+    }
+
+    .bar-label { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow-x: auto;
+    }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+
+    th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+      padding: 13px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #FAF9F6;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .badge.inactive { background: #EFECE6; color: var(--muted); }
+    .badge.warn { background: #FDECE8; color: var(--red); }
+
+    .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .btn-sm {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn-sm:hover { background: var(--input-bg); }
+    .btn-sm.danger { color: var(--red); border-color: #F3C6BC; }
+
+    .barber-tag {
+      display: inline-block;
+      background: var(--input-bg);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      margin: 2px 4px 2px 0;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: none;
+      place-items: center;
+      padding: 16px;
+      z-index: 30;
+    }
+
+    .modal-backdrop.open { display: grid; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 450px;
+      border: 1px solid var(--border);
+    }
+
+    .modal h3 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 14px; }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+
+    .field input, .field select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .checkbox-group { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+    .checkbox-item input { width: auto; }
+
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-icon">R</div>
+      <div>
+        <h1>RAIZ</h1>
+        <span>BARBEARIA · ADMINISTRAÇÃO</span>
+      </div>
+    </div>
+
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-tab="painel">Painel de Controle</button>
+      <button class="nav-tab" data-tab="agenda">Agenda & Comandas</button>
+      <button class="nav-tab" data-tab="catalogo">Catálogo de Serviços</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="toast-banner" id="toast-alerta">
+      <span id="toast-texto">Atualização recebida em tempo real.</span>
+      <button class="btn-sm" onclick="document.getElementById('toast-alerta').classList.remove('show')">Fechar</button>
+    </div>
+
+    <!-- SECÇÃO 1: PAINEL DE CONTROLE -->
+    <section class="section active" id="sec-painel">
+      <div class="section-header">
+        <div>
+          <h2 class="page-title">Painel de Controle</h2>
+          <p class="page-subtitle">Indicadores rápidos e evolução de faturação da barbearia.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="card">
+          <div class="stat-label">Agendamentos do dia</div>
+          <div class="stat-value" id="kpi-agendamentos">0</div>
+          <div class="stat-hint" id="kpi-concluidos">0 concluídos</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Ticket médio</div>
+          <div class="stat-value" id="kpi-ticket">R$ 0,00</div>
+          <div class="stat-hint">Serviços + comandas na cadeira</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Taxa de ocupação</div>
+          <div class="stat-value" id="kpi-ocupacao">0%</div>
+          <div class="stat-hint">Capacidade diária de 24 horários</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Faturação acumulada</div>
+          <div class="stat-value" id="kpi-faturacao">R$ 0,00</div>
+          <div class="stat-hint">Atualizado em tempo real</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="chart-header">
+          <div>
+            <strong>Gráfico de Faturação</strong>
+            <div style="font-size:12px;color:var(--muted);">Receita consolidada por período</div>
+          </div>
+          <div class="period-btns" id="period-selector">
+            <button class="chip active" data-period="diario">Diário</button>
+            <button class="chip" data-period="semanal">Semanal</button>
+            <button class="chip" data-period="mensal">Mensal</button>
+          </div>
+        </div>
+        <div class="bar-chart" id="grafico-faturacao"></div>
+      </div>
+    </section>
+
+    <!-- SECÇÃO 2: AGENDA & COMANDAS -->
+    <section class="section" id="sec-agenda">
+      <div class="section-header">
+        <div>
+          <h2 class="page-title">Agenda & Comandas</h2>
+          <p class="page-subtitle">Inicie atendimentos e lance produtos extras vendidos na cadeira.</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="chip active" id="btn-vista-diaria" onclick="mudarVistaAgenda('diaria')">Vista Diária</button>
+          <button class="chip" id="btn-vista-semanal" onclick="mudarVistaAgenda('semanal')">Vista Semanal</button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Data / Hora</th>
+              <th>Cliente</th>
+              <th>Serviço e Comanda</th>
+              <th>Profissional</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-agenda"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECÇÃO 3: CATÁLOGO DE SERVIÇOS E PREÇOS -->
+    <section class="section" id="sec-catalogo">
+      <div class="section-header">
+        <div>
+          <h2 class="page-title">Catálogo de Serviços e Preços</h2>
+          <p class="page-subtitle">Registe, edite ou desative serviços e associe os barbeiros habilitados.</p>
+        </div>
+        <button class="btn-primary" onclick="abrirModalServico()">+ Novo serviço</button>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Serviço</th>
+              <th>Duração</th>
+              <th>Preço</th>
+              <th>Barbeiros habilitados</th>
+              <th>Estado</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-servicos"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL SERVIÇO -->
+  <div class="modal-backdrop" id="modal-servico">
+    <div class="modal">
+      <h3 id="modal-servico-titulo">Novo serviço</h3>
+      <form id="form-servico">
+        <input type="hidden" id="servico-id" />
+        <div class="field">
+          <label>Nome do serviço</label>
+          <input type="text" id="servico-nome" required placeholder="Ex.: Corte + Barba" />
+        </div>
+        <div class="field">
+          <label>Preço (R$)</label>
+          <input type="number" step="0.01" id="servico-preco" required placeholder="85.00" />
+        </div>
+        <div class="field">
+          <label>Duração (minutos)</label>
+          <input type="number" id="servico-duracao" required placeholder="60" />
+        </div>
+        <div class="field">
+          <label>Barbeiros que realizam este serviço</label>
+          <div class="checkbox-group" id="checkbox-barbeiros">
+            <label class="checkbox-item"><input type="checkbox" value="Rafael Costa" checked /> Rafael Costa</label>
+            <label class="checkbox-item"><input type="checkbox" value="Diego Santos" checked /> Diego Santos</label>
+            <label class="checkbox-item"><input type="checkbox" value="Bruno Lima" checked /> Bruno Lima</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-sm" onclick="fecharModalServico()">Cancelar</button>
+          <button type="submit" class="btn-primary">Guardar serviço</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL COMANDA NA CADEIRA -->
+  <div class="modal-backdrop" id="modal-comanda">
+    <div class="modal">
+      <h3>Adicionar item à comanda</h3>
+      <form id="form-comanda">
+        <input type="hidden" id="comanda-agendamento-id" />
+        <div class="field">
+          <label>Produto ou extra na cadeira</label>
+          <select id="comanda-produto">
+            <option value="Pomada Modeladora Matte|35">Pomada Modeladora Matte · R$ 35,00</option>
+            <option value="Óleo para Barba|40">Óleo para Barba · R$ 40,00</option>
+            <option value="Balm Hidratante|38">Balm Hidratante · R$ 38,00</option>
+            <option value="Hidratação Capilar|25">Hidratação Capilar · R$ 25,00</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-sm" onclick="fecharModalComanda()">Cancelar</button>
+          <button type="submit" class="btn-primary">Adicionar à comanda</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      onSnapshot,
+      doc,
+      setDoc,
+      updateDoc,
+      arrayUnion
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "COLE_SUA_API_KEY_AQUI",
+      authDomain: "barbearia-26a18.firebaseapp.com",
+      projectId: "barbearia-26a18",
+      storageBucket: "barbearia-26a18.appspot.com",
+      messagingSenderId: "COLE_SEU_SENDER_ID",
+      appId: "COLE_SEU_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let agendamentos = [];
+    let servicos = [];
+    let periodoGrafico = "diario";
+    let vistaAgenda = "diaria";
+    let cargaInicial = true;
+
+    const moeda = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+    function mostrarAlerta(msg) {
+      document.getElementById("toast-texto").textContent = msg;
+      document.getElementById("toast-alerta").classList.add("show");
+    }
+
+    onSnapshot(collection(db, "agendamentos"), (snap) => {
+      if (!cargaInicial) {
+        snap.docChanges().forEach((change) => {
+          const dados = change.doc.data();
+          if (change.type === "added") {
+            mostrarAlerta(`Novo agendamento: ${dados.clienteNome} (${dados.horario})`);
+          } else if (change.type === "removed") {
+            mostrarAlerta(`Agendamento cancelado: ${dados.clienteNome}`);
+          }
+        });
+      }
+      cargaInicial = false;
+      agendamentos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      atualizarPainel();
+      renderizarAgenda();
+    });
+
+    onSnapshot(collection(db, "servicos"), async (snap) => {
+      if (snap.empty) {
+        const iniciais = [
+          { id: "1", nome: "Corte", preco: 45, duracaoMin: 30, ativo: true, barbeiros: ["Rafael Costa", "Diego Santos", "Bruno Lima"] },
+          { id: "2", nome: "Corte + barba", preco: 85, duracaoMin: 60, ativo: true, barbeiros: ["Rafael Costa", "Diego Santos"] },
+          { id: "3", nome: "Barba", preco: 40, duracaoMin: 30, ativo: true, barbeiros: ["Rafael Costa", "Bruno Lima"] },
+          { id: "4", nome: "Acabamento", preco: 20, duracaoMin: 15, ativo: true, barbeiros: ["Rafael Costa", "Diego Santos", "Bruno Lima"] }
+        ];
+        for (const s of iniciais) await setDoc(doc(db, "servicos", s.id), s);
+        return;
+      }
+      servicos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderizarServicos();
+    });
+
+    function totalAgendamento(item) {
+      const base = Number(item.servico?.preco || 0);
+      const extras = (item.comanda || []).reduce((acc, c) => acc + Number(c.preco || 0), 0);
+      return base + extras;
+    }
+
+    function atualizarPainel() {
+      const validos = agendamentos.filter((a) => a.status !== "Falta registrada");
+      const concluidos = validos.filter((a) => a.status === "Concluído");
+      const fatTotal = validos.reduce((acc, a) => acc + totalAgendamento(a), 0);
+      const ticket = validos.length ? fatTotal / validos.length : 0;
+      const ocupacao = Math.min(100, Math.round((validos.length / 24) * 100));
+
+      document.getElementById("kpi-agendamentos").textContent = validos.length;
+      document.getElementById("kpi-concluidos").textContent = `${concluidos.length} concluídos`;
+      document.getElementById("kpi-ticket").textContent = moeda(ticket);
+      document.getElementById("kpi-ocupacao").textContent = `${ocupacao}%`;
+      document.getElementById("kpi-faturacao").textContent = moeda(fatTotal);
+
+      renderizarGrafico(fatTotal);
+    }
+
+    function renderizarGrafico(fatAtual) {
+      const series = {
+        diario: [
+          { label: "Seg", valor: 420 },
+          { label: "Ter", valor: 510 },
+          { label: "Qua", valor: 480 },
+          { label: "Qui", valor: Math.max(fatAtual, 640) },
+          { label: "Sex", valor: 890 },
+          { label: "Sáb", valor: 1120 }
+        ],
+        semanal: [
+          { label: "Sem 1", valor: 3450 },
+          { label: "Sem 2", valor: 3890 },
+          { label: "Sem 3", valor: 4120 },
+          { label: "Sem 4", valor: 4380 + fatAtual }
+        ],
+        mensal: [
+          { label: "Jul", valor: 14200 },
+          { label: "Ago", valor: 15100 },
+          { label: "Set", valor: 14800 },
+          { label: "Out", valor: 16400 },
+          { label: "Nov", valor: 17200 + fatAtual }
+        ]
+      };
+
+      const dados = series[periodoGrafico];
+      const max = Math.max(...dados.map((d) => d.valor), 1);
+      const container = document.getElementById("grafico-faturacao");
+
+      container.innerHTML = dados.map((d) => {
+        const altura = Math.round((d.valor / max) * 150);
+        return `
+          <div class="bar-col">
+            <div class="bar-val">${moeda(d.valor)}</div>
+            <div class="bar-fill" style="height:${altura}px"></div>
+            <div class="bar-label">${d.label}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderizarAgenda() {
+      const lista = vistaAgenda === "diaria"
+        ? agendamentos.filter((a) => (a.dataTexto || "").includes("12"))
+        : agendamentos;
+
+      const tbody = document.getElementById("tabela-agenda");
+      if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px;">Sem agendamentos nesta vista.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = lista.map((item) => {
+        const extrasTexto = (item.comanda || []).map((c) => `+ ${c.nome}`).join(", ");
+        return `
+          <tr>
+            <td><strong>${item.horario || ""}</strong><br><span style="font-size:12px;color:var(--muted);">${item.dataTexto || ""}</span></td>
+            <td><strong>${item.clienteNome || ""}</strong><br><span style="font-size:12px;color:var(--muted);">${item.clienteTelefone || ""}</span></td>
+            <td>
+              ${item.servico?.nome || ""}
+              ${extrasTexto ? `<div style="font-size:11px;color:var(--green);margin-top:2px;">${extrasTexto}</div>` : ""}
+            </td>
+            <td>${item.profissional?.nome || ""}</td>
+            <td><strong>${moeda(totalAgendamento(item))}</strong></td>
+            <td><span class="badge ${item.status === "Falta registrada" ? "warn" : ""}">${item.status || "Confirmado"}</span></td>
+            <td>
+              <div class="actions">
+                <button class="btn-sm" onclick="atualizarStatus('${item.id}', 'Em atendimento')">Iniciar</button>
+                <button class="btn-sm" onclick="abrirModalComanda('${item.id}')">+ Comanda</button>
+                <button class="btn-sm" onclick="atualizarStatus('${item.id}', 'Concluído')">Concluir</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderizarServicos() {
+      const tbody = document.getElementById("tabela-servicos");
+      tbody.innerHTML = servicos.map((s) => `
+        <tr>
+          <td><strong>${s.nome}</strong></td>
+          <td>${s.duracaoMin} min</td>
+          <td><strong>${moeda(s.preco)}</strong></td>
+          <td>${(s.barbeiros || []).map((b) => `<span class="barber-tag">${b}</span>`).join("")}</td>
+          <td><span class="badge ${s.ativo ? "" : "inactive"}">${s.ativo ? "Ativo" : "Desativado"}</span></td>
+          <td>
+            <div class="actions">
+              <button class="btn-sm" onclick="editarServico('${s.id}')">Editar</button>
+              <button class="btn-sm ${s.ativo ? "danger" : ""}" onclick="alternarServico('${s.id}', ${!s.ativo})">
+                ${s.ativo ? "Desativar" : "Ativar"}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    document.querySelectorAll(".nav-tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".nav-tab").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".section").forEach((s) => s.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(`sec-${btn.dataset.tab}`).classList.add("active");
+      });
+    });
+
+    document.getElementById("period-selector").addEventListener("click", (e) => {
+      if (!e.target.classList.contains("chip")) return;
+      document.querySelectorAll("#period-selector .chip").forEach((c) => c.classList.remove("active"));
+      e.target.classList.add("active");
+      periodoGrafico = e.target.dataset.period;
+      atualizarPainel();
+    });
+
+    window.mudarVistaAgenda = (vista) => {
+      vistaAgenda = vista;
+      document.getElementById("btn-vista-diaria").classList.toggle("active", vista === "diaria");
+      document.getElementById("btn-vista-semanal").classList.toggle("active", vista === "semanal");
+      renderizarAgenda();
+    };
+
+    window.atualizarStatus = async (id, status) => {
+      await updateDoc(doc(db, "agendamentos", id), { status });
+    };
+
+    window.abrirModalComanda = (id) => {
+      document.getElementById("comanda-agendamento-id").value = id;
+      document.getElementById("modal-comanda").classList.add("open");
+    };
+
+    window.fecharModalComanda = () => document.getElementById("modal-comanda").classList.remove("open");
+
+    document.getElementById("form-comanda").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = document.getElementById("comanda-agendamento-id").value;
+      const [nome, preco] = document.getElementById("comanda-produto").value.split("|");
+      await updateDoc(doc(db, "agendamentos", id), {
+        comanda: arrayUnion({ nome, preco: Number(preco) })
+      });
+      fecharModalComanda();
+    });
+
+    window.abrirModalServico = () => {
+      document.getElementById("modal-servico-titulo").textContent = "Novo serviço";
+      document.getElementById("servico-id").value = "";
+      document.getElementById("form-servico").reset();
+      document.getElementById("modal-servico").classList.add("open");
+    };
+
+    window.editarServico = (id) => {
+      const s = servicos.find((x) => x.id === id);
+      if (!s) return;
+      document.getElementById("modal-servico-titulo").textContent = "Editar serviço";
+      document.getElementById("servico-id").value = s.id;
+      document.getElementById("servico-nome").value = s.nome;
+      document.getElementById("servico-preco").value = s.preco;
+      document.getElementById("servico-duracao").value = s.duracaoMin;
+      document.querySelectorAll("#checkbox-barbeiros input").forEach((cb) => {
+        cb.checked = (s.barbeiros || []).includes(cb.value);
+      });
+      document.getElementById("modal-servico").classList.add("open");
+    };
+
+    window.fecharModalServico = () => document.getElementById("modal-servico").classList.remove("open");
+
+    window.alternarServico = async (id, ativo) => {
+      await updateDoc(doc(db, "servicos", id), { ativo });
+    };
+
+    document.getElementById("form-servico").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const idExistente = document.getElementById("servico-id").value;
+      const docRef = idExistente ? doc(db, "servicos", idExistente) : doc(collection(db, "servicos"));
+      const barbeiros = Array.from(document.querySelectorAll("#checkbox-barbeiros input:checked")).map((cb) => cb.value);
+
+      await setDoc(docRef, {
+        id: docRef.id,
+        nome: document.getElementById("servico-nome").value,
+        preco: Number(document.getElementById("servico-preco").value),
+        duracaoMin: Number(document.getElementById("servico-duracao").value),
+        barbeiros,
+        ativo: true
+      }, { merge: true });
+
+      fecharModalServico();
+    });
+  </script>
+</body>
+</html>
