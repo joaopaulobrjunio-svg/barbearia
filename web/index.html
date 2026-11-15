@@ -9,38 +9,59 @@
     <style>
         body { background-color: #F7F5F0; color: #1A1D1A; font-family: sans-serif; }
         .bg-forest { background-color: #1C4332 !important; }
-        .card { border-radius: 14px; border: 1px solid #E6E2D8; }
+        .card { border-radius: 14px; border: 1px solid #E6E2D8; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .navbar-brand { font-weight: 700; letter-spacing: 0.5px; }
     </style>
 </head>
 <body>
 
+    <!-- Barra de Navegação -->
     <nav class="navbar navbar-dark bg-forest shadow-sm mb-4">
-        <div class="container-fluid">
-            <span class="navbar-brand mb-0 h1 fw-bold">RAIZ BARBEARIA — Painel Web</span>
+        <div class="container-fluid px-4">
+            <span class="navbar-brand mb-0 h1">🌿 RAIZ BARBEARIA — Painel Administrativo</span>
+            <span class="text-white small">Modo Administrador</span>
         </div>
     </nav>
 
-    <div class="container">
-        <!-- Secção de Avaliações e Feedback dos Clientes -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header bg-forest text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">⭐ Avaliações e Feedback dos Clientes</h5>
-                <span id="mediaEstrelas" class="badge bg-light text-dark fs-6">Média: 5.0 ⭐</span>
+    <div class="container pb-5">
+        
+        <!-- Linha de Estatísticas / Resumo -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="card p-3 bg-white">
+                    <h6 class="text-muted mb-1">Média Geral de Avaliações</h6>
+                    <h3 id="mediaEstrelas" class="fw-bold text-success mb-0">Carregando...</h3>
+                </div>
             </div>
-            <div class="card-body">
-                <div id="listaAvaliacoes" class="list-group">
-                    <p class="text-muted text-center py-3">A carregar avaliações em tempo real...</p>
+            <div class="col-md-6">
+                <div class="card p-3 bg-white">
+                    <h6 class="text-muted mb-1">Total de Avaliações Recebidas</h6>
+                    <h3 id="totalAvaliacoesCount" class="fw-bold text-dark mb-0">0</h3>
                 </div>
             </div>
         </div>
+
+        <!-- Secção de Avaliações e Feedback dos Clientes -->
+        <div class="card mb-4">
+            <div class="card-header bg-forest text-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0">⭐ Avaliações e Feedback dos Clientes</h5>
+                <span class="badge bg-light text-dark fs-6" id="badgeTotal">Tempo Real</span>
+            </div>
+            <div class="card-body">
+                <div id="listaAvaliacoes" class="list-group">
+                    <p class="text-muted text-center py-4">A carregar avaliações em tempo real do Firestore...</p>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (Compat version) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // Configuração do Firebase (substitua com as credenciais do seu projeto se necessário)
+        // Configuração do Firebase (Insira os dados do seu projeto)
         const firebaseConfig = {
             apiKey: "SUA_API_KEY",
             authDomain: "SEU_AUTH_DOMAIN",
@@ -50,6 +71,7 @@
             appId: "SEU_APP_ID"
         };
 
+        // Inicializar Firebase de forma segura
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -58,13 +80,16 @@
         // Sincronização em tempo real com a coleção 'avaliacoes' do Firestore
         db.collection("avaliacoes").onSnapshot((snapshot) => {
             const listaContainer = document.getElementById("listaAvaliacoes");
-            const badgeMedia = document.getElementById("mediaEstrelas");
+            const elemMedia = document.getElementById("mediaEstrelas");
+            const elemTotal = document.getElementById("totalAvaliacoesCount");
             
+            if (!listaContainer) return;
             listaContainer.innerHTML = "";
             
             if (snapshot.empty) {
-                listaContainer.innerHTML = `<p class="text-muted text-center py-3">Ainda não existem avaliações registadas.</p>`;
-                badgeMedia.innerText = "Média: - ⭐";
+                listaContainer.innerHTML = `<p class="text-muted text-center py-4">Ainda não existem avaliações registadas no sistema.</p>`;
+                if (elemMedia) elemMedia.innerText = "- ⭐";
+                if (elemTotal) elemTotal.innerText = "0";
                 return;
             }
 
@@ -74,26 +99,34 @@
 
             snapshot.forEach((doc) => {
                 const aval = doc.data();
-                somaEstrelas += aval.estrelas || 0;
+                const estrelas = aval.estrelas || 5;
+                somaEstrelas += estrelas;
 
-                const estrelasVisuais = "⭐".repeat(aval.estrelas || 5);
+                const estrelasVisuais = "⭐".repeat(estrelas);
 
                 htmlContent += `
-                    <div class="list-group-item list-group-item-action flex-column align-items-start mb-2 rounded border">
-                        <div class="d-flex w-100 justify-content-between">
+                    <div class="list-group-item list-group-item-action flex-column align-items-start mb-2 rounded border p-3">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
                             <h5 class="mb-1 text-success fw-bold">${aval.clienteNome || "Cliente"}</h5>
-                            <small class="text-muted">${estrelasVisuais} (${aval.estrelas}/5)</small>
+                            <span class="badge bg-warning text-dark">${estrelasVisuais} (${estrelas}/5)</span>
                         </div>
-                        <p class="mb-1 text-dark">"${aval.comentario || "Sem comentário adicional."}"</p>
-                        <small class="text-secondary">Barbeiro avaliado: <strong>${aval.profissionalNome || "Geral"}</strong></small>
+                        <p class="mb-1 text-dark mt-2">"${aval.comentario || "O cliente não deixou comentário adicional."}"</p>
+                        <small class="text-muted">Barbeiro responsável: <strong>${aval.profissionalNome || "Geral"}</strong></small>
                     </div>
                 `;
             });
 
             const mediaGeral = (somaEstrelas / totalAvaliacoes).toFixed(1);
-            badgeMedia.innerText = `Média Geral: ${mediaGeral} ⭐ (${totalAvaliacoes})`;
+            if (elemMedia) elemMedia.innerText = `${mediaGeral} ⭐`;
+            if (elemTotal) elemTotal.innerText = totalAvaliacoes;
             
             listaContainer.innerHTML = htmlContent;
+        }, (error) => {
+            console.error("Erro ao carregar avaliações do Firestore: ", error);
+            const listaContainer = document.getElementById("listaAvaliacoes");
+            if (listaContainer) {
+                listaContainer.innerHTML = `<p class="text-danger text-center py-4">Erro de ligação ao Firestore. Verifique as credenciais.</p>`;
+            }
         });
     </script>
 </body>
