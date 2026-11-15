@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Raiz Barbearia · Gestão Web</title>
+  <title>Raiz Barbearia - Gestão Web</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -373,17 +373,17 @@
       <div class="brand-icon">R</div>
       <div>
         <h1>RAIZ</h1>
-        <span>BARBEARIA · ADMINISTRAÇÃO</span>
+        <span>BARBEARIA - ADMINISTRAÇÃO</span>
       </div>
     </div>
 
     <div class="header-right">
       <nav class="nav-tabs">
-        <button type="button" class="nav-tab active" data-tab="painel">Painel de Controle</button>
-        <button type="button" class="nav-tab" data-tab="agenda">Agenda & Comandas</button>
-        <button type="button" class="nav-tab" data-tab="catalogo">Catálogo de Serviços</button>
-        <button type="button" class="nav-tab" data-tab="funcionarios">Funcionários</button>
-        <button type="button" class="nav-tab" data-tab="avaliacoes">Avaliações</button>
+        <button type="button" class="nav-tab active" onclick="trocarAba('painel', this)">Painel de Controle</button>
+        <button type="button" class="nav-tab" onclick="trocarAba('agenda', this)">Agenda e Comandas</button>
+        <button type="button" class="nav-tab" onclick="trocarAba('catalogo', this)">Catálogo de Serviços</button>
+        <button type="button" class="nav-tab" onclick="trocarAba('funcionarios', this)">Funcionários</button>
+        <button type="button" class="nav-tab" onclick="trocarAba('avaliacoes', this)">Avaliações</button>
       </nav>
       <span class="status-pill" id="firebase-status">Conectando...</span>
     </div>
@@ -430,4 +430,847 @@
         <div class="chart-header">
           <div>
             <strong>Gráfico de Faturamento Real</strong>
-            <div style="
+            <div style="font-size:12px;color:var(--muted);" id="chart-subtitulo">Total no período: R$ 0,00</div>
+          </div>
+          <div class="period-btns" id="period-selector">
+            <button type="button" class="chip active" onclick="mudarPeriodo('diario', this)">Diário (7 dias)</button>
+            <button type="button" class="chip" onclick="mudarPeriodo('semanal', this)">Semanal (Mês)</button>
+            <button type="button" class="chip" onclick="mudarPeriodo('mensal', this)">Mensal (6 meses)</button>
+          </div>
+        </div>
+        <div class="bar-chart" id="grafico-faturacao"></div>
+      </div>
+    </section>
+
+    <section class="section" id="sec-agenda">
+      <div class="section-header">
+        <div>
+          <h2 class="page-title">Agenda e Comandas</h2>
+          <p class="page-subtitle">Inicie atendimentos, filtre por barbeiro e lance produtos na cadeira.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="chip" id="btn-vista-diaria" onclick="mudarVistaAgenda('diaria')">Hoje</button>
+          <button type="button" class="chip active" id="btn-vista-semanal" onclick="mudarVistaAgenda('semanal')">Todos os dias</button>
+          <button type="button" class="btn-primary" onclick="abrirModalAgendamento()">+ Novo agendamento</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <div class="filter-chips" id="filtros-barbeiros"></div>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Data / Hora</th>
+              <th>Cliente</th>
+              <th>Serviço e Comanda</th>
+              <th>Profissional</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-agenda"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="sec-catalogo">
+      <div class="section-header">
+        <div>
+          <h2 class="page-title">Catálogo de Serviços e Preços</h2>
+          <p class="page-subtitle">Cadastre, edite ou desative serviços e associe os funcionários habilitados.</p>
+        </div>
+        <button type="button" class="btn-primary" onclick="abrirModalServico()">+ Novo serviço</button>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Serviço</th>
+              <th>Duração</th>
+              <th>Preço</th>
+              <th>Funcionários habilitados</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-servicos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="sec-funcionarios">
+      <div class="section-header">
+        <div>
+          <h2 class="page-title">Funcionários</h2>
+          <p class="page-subtitle">Gerencie a equipe de barbeiros, especialidades e disponibilidade no sistema.</p>
+        </div>
+        <button type="button" class="btn-primary" onclick="abrirModalFuncionario()">+ Novo funcionário</button>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Especialidade</th>
+              <th>Telefone / WhatsApp</th>
+              <th>Turno</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-funcionarios"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="sec-avaliacoes">
+      <div class="section-header">
+        <div>
+          <h2 class="page-title">Avaliações dos Clientes</h2>
+          <p class="page-subtitle">Acompanhe as notas e comentários enviados pelo aplicativo em tempo real.</p>
+        </div>
+        <div class="filter-chips" id="filtros-estrelas">
+          <button type="button" class="chip active" onclick="filtrarPorEstrelas('todas', this)">Todas</button>
+          <button type="button" class="chip" onclick="filtrarPorEstrelas('5', this)">5 estrelas</button>
+          <button type="button" class="chip" onclick="filtrarPorEstrelas('4', this)">4 estrelas</button>
+          <button type="button" class="chip" onclick="filtrarPorEstrelas('3', this)">3 estrelas</button>
+          <button type="button" class="chip" onclick="filtrarPorEstrelas('2', this)">2 estrelas</button>
+          <button type="button" class="chip" onclick="filtrarPorEstrelas('1', this)">1 estrela</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="card">
+          <div class="stat-label">Média geral</div>
+          <div class="stat-value" id="kpi-media-estrelas">-</div>
+          <div class="stat-hint">De 5.0 estrelas possíveis</div>
+        </div>
+        <div class="card">
+          <div class="stat-label">Total de avaliações</div>
+          <div class="stat-value" id="kpi-total-avaliacoes">0</div>
+          <div class="stat-hint">Feedbacks recebidos</div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Profissional</th>
+              <th>Nota</th>
+              <th>Comentário</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tabela-avaliacoes"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="modal-agendamento" onclick="if(event.target===this) fecharModalAgendamento()">
+    <div class="modal">
+      <h3>Novo agendamento</h3>
+      <form id="form-agendamento" onsubmit="salvarAgendamento(event)">
+        <div class="field">
+          <label>Nome do cliente</label>
+          <input type="text" id="ag-cliente" required placeholder="Ex.: Lucas Almeida" />
+        </div>
+        <div class="field">
+          <label>Telefone / WhatsApp</label>
+          <input type="text" id="ag-telefone" required placeholder="(92) 99999-9999" />
+        </div>
+        <div class="field">
+          <label>Serviço</label>
+          <select id="ag-servico" required></select>
+        </div>
+        <div class="field">
+          <label>Funcionário</label>
+          <select id="ag-profissional" required></select>
+        </div>
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="ag-data" required />
+        </div>
+        <div class="field">
+          <label>Horário</label>
+          <input type="text" id="ag-horario" value="15:00 - 16:00" required />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-sm" onclick="fecharModalAgendamento()">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar agendamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-servico" onclick="if(event.target===this) fecharModalServico()">
+    <div class="modal">
+      <h3 id="modal-servico-titulo">Novo serviço</h3>
+      <form id="form-servico" onsubmit="salvarServico(event)">
+        <input type="hidden" id="servico-id" />
+        <div class="field">
+          <label>Nome do serviço</label>
+          <input type="text" id="servico-nome" required placeholder="Ex.: Corte + Barba" />
+        </div>
+        <div class="field">
+          <label>Preço (R$)</label>
+          <input type="number" step="0.01" id="servico-preco" required placeholder="85.00" />
+        </div>
+        <div class="field">
+          <label>Duração (minutos)</label>
+          <input type="number" id="servico-duracao" required placeholder="60" />
+        </div>
+        <div class="field">
+          <label>Funcionários que realizam este serviço</label>
+          <div class="checkbox-group" id="checkbox-barbeiros"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-sm" onclick="fecharModalServico()">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar serviço</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-funcionario" onclick="if(event.target===this) fecharModalFuncionario()">
+    <div class="modal">
+      <h3 id="modal-funcionario-titulo">Novo funcionário</h3>
+      <form id="form-funcionario" onsubmit="salvarFuncionario(event)">
+        <input type="hidden" id="func-id" />
+        <div class="field">
+          <label>Nome completo</label>
+          <input type="text" id="func-nome" required placeholder="Ex.: Rafael Costa" />
+        </div>
+        <div class="field">
+          <label>Especialidade</label>
+          <input type="text" id="func-especialidade" required placeholder="Ex.: Cortes clássicos e barba" />
+        </div>
+        <div class="field">
+          <label>Telefone / WhatsApp</label>
+          <input type="text" id="func-telefone" required placeholder="(92) 99999-9999" />
+        </div>
+        <div class="field">
+          <label>Horário de trabalho</label>
+          <input type="text" id="func-turno" required value="09:00 - 19:00" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-sm" onclick="fecharModalFuncionario()">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar funcionário</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-comanda" onclick="if(event.target===this) fecharModalComanda()">
+    <div class="modal">
+      <h3>Adicionar item à comanda</h3>
+      <form id="form-comanda" onsubmit="salvarComanda(event)">
+        <input type="hidden" id="comanda-agendamento-id" />
+        <div class="field">
+          <label>Produto ou extra na cadeira</label>
+          <select id="comanda-produto">
+            <option value="Pomada Modeladora Matte|35">Pomada Modeladora Matte - R$ 35,00</option>
+            <option value="Óleo para Barba|40">Óleo para Barba - R$ 40,00</option>
+            <option value="Balm Hidratante|38">Balm Hidratante - R$ 38,00</option>
+            <option value="Hidratação Capilar|25">Hidratação Capilar - R$ 25,00</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-sm" onclick="fecharModalComanda()">Cancelar</button>
+          <button type="submit" class="btn-primary">Adicionar à comanda</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function trocarAba(tabId, btn) {
+      var tabs = document.querySelectorAll(".nav-tab");
+      for (var i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove("active");
+      }
+      var secs = document.querySelectorAll(".section");
+      for (var j = 0; j < secs.length; j++) {
+        secs[j].classList.remove("active");
+      }
+      if (btn) btn.classList.add("active");
+      var alvo = document.getElementById("sec-" + tabId);
+      if (alvo) alvo.classList.add("active");
+    }
+
+    var agendamentos = [];
+    var avaliacoes = [];
+    var servicos = [
+      { id: "1", nome: "Corte", preco: 45, duracaoMin: 30, ativo: true, barbeiros: ["Rafael Costa", "Diego Santos", "Bruno Lima"] },
+      { id: "2", nome: "Corte + barba", preco: 85, duracaoMin: 60, ativo: true, barbeiros: ["Rafael Costa", "Diego Santos"] },
+      { id: "3", nome: "Barba", preco: 40, duracaoMin: 30, ativo: true, barbeiros: ["Rafael Costa", "Bruno Lima"] },
+      { id: "4", nome: "Acabamento", preco: 20, duracaoMin: 15, ativo: true, barbeiros: ["Rafael Costa", "Diego Santos", "Bruno Lima"] }
+    ];
+    var funcionarios = [
+      { id: "1", nome: "Rafael Costa", especialidade: "Cortes clássicos e barba", telefone: "(92) 99100-0001", turno: "09:00 - 19:00", ativo: true },
+      { id: "2", nome: "Diego Santos", especialidade: "Degradês e cortes modernos", telefone: "(92) 99100-0002", turno: "09:00 - 19:00", ativo: true },
+      { id: "3", nome: "Bruno Lima", especialidade: "Tesoura e visagismo", telefone: "(92) 99100-0003", turno: "10:00 - 20:00", ativo: true }
+    ];
+
+    var periodoGrafico = "diario";
+    var vistaAgenda = "semanal";
+    var filtroBarbeiro = "Todos";
+    var filtroEstrelas = "todas";
+    var cargaInicial = true;
+    var db = null;
+
+    var MESES_MAP = { jan: 0, fev: 1, mar: 2, abr: 3, mai: 4, jun: 5, jul: 6, ago: 7, set: 8, out: 9, nov: 10, dez: 11 };
+    var MESES_CURTOS = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+    var DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+    function moeda(v) {
+      return Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function parseDataAgendamento(item) {
+      if (item.dataISO) {
+        var p = item.dataISO.split("-").map(Number);
+        if (p[0] && p[1] && p[2]) return new Date(p[0], p[1] - 1, p[2]);
+      }
+      var txt = (item.dataTexto || "").toLowerCase().trim();
+      var matchBarra = txt.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+      if (matchBarra) {
+        var d1 = Number(matchBarra[1]);
+        var m1 = Number(matchBarra[2]) - 1;
+        var y1 = matchBarra[3] ? (matchBarra[3].length === 2 ? 2000 + Number(matchBarra[3]) : Number(matchBarra[3])) : new Date().getFullYear();
+        return new Date(y1, m1, d1);
+      }
+      var dia = Number(item.diaNumero);
+      var mesKey = (item.mesTexto || "").toLowerCase().slice(0, 3);
+      if (dia && MESES_MAP[mesKey] !== undefined) {
+        return new Date(new Date().getFullYear(), MESES_MAP[mesKey], dia);
+      }
+      return new Date();
+    }
+
+    function mesmaData(a, b) {
+      return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+
+    function mostrarAlerta(msg) {
+      document.getElementById("toast-texto").textContent = msg;
+      document.getElementById("toast-alerta").classList.add("show");
+    }
+
+    function fecharAlerta() {
+      document.getElementById("toast-alerta").classList.remove("show");
+    }
+
+    function totalAgendamento(item) {
+      var base = Number((item.servico && item.servico.preco) || 0);
+      var extras = (item.comanda || []).reduce(function(acc, c) { return acc + Number(c.preco || 0); }, 0);
+      return base + extras;
+    }
+
+    function atualizarPainel() {
+      var hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+
+      var validos = agendamentos.filter(function(a) { return a.status !== "Falta registrada"; });
+      var deHoje = validos.filter(function(a) { return mesmaData(parseDataAgendamento(a), hoje); });
+      var concluidos = validos.filter(function(a) { return a.status === "Concluído"; });
+      var fatTotal = validos.reduce(function(acc, a) { return acc + totalAgendamento(a); }, 0);
+      var ticket = validos.length ? fatTotal / validos.length : 0;
+      var ativos = funcionarios.filter(function(f) { return f.ativo; }).length || 1;
+      var capacidade = ativos * 8;
+      var ocupacao = Math.min(100, Math.round((deHoje.length / capacidade) * 100));
+
+      document.getElementById("kpi-agendamentos").textContent = validos.length;
+      document.getElementById("kpi-concluidos").textContent = concluidos.length + " concluídos - " + deHoje.length + " hoje";
+      document.getElementById("kpi-ticket").textContent = moeda(ticket);
+      document.getElementById("kpi-ocupacao").textContent = ocupacao + "%";
+      document.getElementById("kpi-capacidade").textContent = "Hoje: " + deHoje.length + " de " + capacidade + " vagas (" + ativos + " barbeiro(s))";
+      document.getElementById("kpi-faturacao").textContent = moeda(fatTotal);
+
+      renderizarGrafico(validos);
+    }
+
+    function mudarPeriodo(periodo, btn) {
+      var chips = document.querySelectorAll("#period-selector .chip");
+      for (var i = 0; i < chips.length; i++) chips[i].classList.remove("active");
+      if (btn) btn.classList.add("active");
+      periodoGrafico = periodo;
+      atualizarPainel();
+    }
+
+    function renderizarGrafico(validos) {
+      var hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      var dados = [];
+
+      if (periodoGrafico === "diario") {
+        for (var i = 6; i >= 0; i--) {
+          var dt = new Date(hoje);
+          dt.setDate(hoje.getDate() - i);
+          var soma = validos
+            .filter(function(a) { return mesmaData(parseDataAgendamento(a), dt); })
+            .reduce(function(acc, a) { return acc + totalAgendamento(a); }, 0);
+          var diaStr = String(dt.getDate()).padStart(2, "0");
+          var mesStr = String(dt.getMonth() + 1).padStart(2, "0");
+          dados.push({ label: DIAS_SEMANA[dt.getDay()] + " " + diaStr + "/" + mesStr, valor: soma });
+        }
+      } else if (periodoGrafico === "semanal") {
+        var semanas = [
+          { label: "Sem 1 (1-7)", valor: 0 },
+          { label: "Sem 2 (8-14)", valor: 0 },
+          { label: "Sem 3 (15-21)", valor: 0 },
+          { label: "Sem 4 (22-31)", valor: 0 }
+        ];
+        validos.forEach(function(a) {
+          var dt = parseDataAgendamento(a);
+          if (dt.getMonth() === hoje.getMonth() && dt.getFullYear() === hoje.getFullYear()) {
+            var idx = Math.min(3, Math.floor((dt.getDate() - 1) / 7));
+            semanas[idx].valor += totalAgendamento(a);
+          }
+        });
+        dados = semanas;
+      } else {
+        for (var j = 5; j >= 0; j--) {
+          var dtM = new Date(hoje.getFullYear(), hoje.getMonth() - j, 1);
+          var somaM = validos
+            .filter(function(a) {
+              var d = parseDataAgendamento(a);
+              return d.getMonth() === dtM.getMonth() && d.getFullYear() === dtM.getFullYear();
+            })
+            .reduce(function(acc, a) { return acc + totalAgendamento(a); }, 0);
+          var mesNome = MESES_CURTOS[dtM.getMonth()].toUpperCase();
+          var anoCurto = String(dtM.getFullYear()).slice(-2);
+          dados.push({ label: mesNome + "/" + anoCurto, valor: somaM });
+        }
+      }
+
+      var totalPeriodo = dados.reduce(function(acc, d) { return acc + d.valor; }, 0);
+      document.getElementById("chart-subtitulo").textContent = "Total no período selecionado: " + moeda(totalPeriodo);
+
+      var max = Math.max.apply(null, dados.map(function(d) { return d.valor; }).concat([1]));
+      var container = document.getElementById("grafico-faturacao");
+
+      container.innerHTML = dados.map(function(d) {
+        var altura = d.valor > 0 ? Math.max(14, Math.round((d.valor / max) * 155)) : 6;
+        return '<div class="bar-col" title="' + d.label + ': ' + moeda(d.valor) + '">' +
+          '<div class="bar-val">' + moeda(d.valor) + '</div>' +
+          '<div class="bar-fill ' + (d.valor === 0 ? "empty-bar" : "") + '" style="height:' + altura + 'px"></div>' +
+          '<div class="bar-label">' + d.label + '</div>' +
+          '</div>';
+      }).join("");
+    }
+
+    function filtrarBarbeiro(nome) {
+      filtroBarbeiro = nome;
+      renderizarFiltrosBarbeiros();
+      renderizarAgenda();
+    }
+
+    function renderizarFiltrosBarbeiros() {
+      var ativos = funcionarios.filter(function(f) { return f.ativo; });
+      var container = document.getElementById("filtros-barbeiros");
+      var botoes = [{ nome: "Todos" }].concat(ativos);
+      container.innerHTML = botoes.map(function(b) {
+        var label = b.nome === "Todos" ? "Todos os funcionários" : b.nome;
+        return '<button type="button" class="chip ' + (filtroBarbeiro === b.nome ? "active" : "") + '" onclick="filtrarBarbeiro(\'' + b.nome + '\')">' + label + '</button>';
+      }).join("");
+    }
+
+    function renderizarAgenda() {
+      var hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+      var lista = agendamentos.slice();
+
+      if (vistaAgenda === "diaria") {
+        lista = lista.filter(function(a) { return mesmaData(parseDataAgendamento(a), hoje); });
+      }
+      if (filtroBarbeiro !== "Todos") {
+        lista = lista.filter(function(a) { return a.profissional && a.profissional.nome === filtroBarbeiro; });
+      }
+
+      var tbody = document.getElementById("tabela-agenda");
+      if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px;">Nenhum agendamento encontrado nesta visualização.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = lista.map(function(item) {
+        var extrasTexto = (item.comanda || []).map(function(c) { return "+ " + c.nome; }).join(", ");
+        var servNome = (item.servico && item.servico.nome) || "";
+        var profNome = (item.profissional && item.profissional.nome) || "";
+        return '<tr>' +
+          '<td><strong>' + (item.horario || "") + '</strong><br><span style="font-size:12px;color:var(--muted);">' + (item.dataTexto || "") + '</span></td>' +
+          '<td><strong>' + (item.clienteNome || "") + '</strong><br><span style="font-size:12px;color:var(--muted);">' + (item.clienteTelefone || "") + '</span></td>' +
+          '<td>' + servNome + (extrasTexto ? '<div style="font-size:11px;color:var(--green);margin-top:2px;">' + extrasTexto + '</div>' : '') + '</td>' +
+          '<td>' + profNome + '</td>' +
+          '<td><strong>' + moeda(totalAgendamento(item)) + '</strong></td>' +
+          '<td><span class="badge ' + (item.status === "Falta registrada" ? "warn" : "") + '">' + (item.status || "Confirmado") + '</span></td>' +
+          '<td><div class="actions">' +
+            '<button type="button" class="btn-sm" onclick="atualizarStatus(\'' + item.id + '\', \'Em atendimento\')">Iniciar</button>' +
+            '<button type="button" class="btn-sm" onclick="abrirModalComanda(\'' + item.id + '\')">+ Comanda</button>' +
+            '<button type="button" class="btn-sm" onclick="atualizarStatus(\'' + item.id + '\', \'Concluído\')">Concluir</button>' +
+            '<button type="button" class="btn-sm danger" onclick="cancelarAgendamento(\'' + item.id + '\')">Cancelar</button>' +
+          '</div></td>' +
+          '</tr>';
+      }).join("");
+    }
+
+    function renderizarServicos() {
+      var tbody = document.getElementById("tabela-servicos");
+      tbody.innerHTML = servicos.map(function(s) {
+        var tags = (s.barbeiros || []).map(function(b) { return '<span class="barber-tag">' + b + '</span>'; }).join("");
+        return '<tr>' +
+          '<td><strong>' + s.nome + '</strong></td>' +
+          '<td>' + s.duracaoMin + ' min</td>' +
+          '<td><strong>' + moeda(s.preco) + '</strong></td>' +
+          '<td>' + tags + '</td>' +
+          '<td><span class="badge ' + (s.ativo ? "" : "inactive") + '">' + (s.ativo ? "Ativo" : "Desativado") + '</span></td>' +
+          '<td><div class="actions">' +
+            '<button type="button" class="btn-sm" onclick="editarServico(\'' + s.id + '\')">Editar</button>' +
+            '<button type="button" class="btn-sm ' + (s.ativo ? "danger" : "") + '" onclick="alternarServico(\'' + s.id + '\', ' + (!s.ativo) + ')">' + (s.ativo ? "Desativar" : "Ativar") + '</button>' +
+          '</div></td>' +
+          '</tr>';
+      }).join("");
+    }
+
+    function renderizarFuncionarios() {
+      var tbody = document.getElementById("tabela-funcionarios");
+      tbody.innerHTML = funcionarios.map(function(f) {
+        return '<tr>' +
+          '<td><strong>' + f.nome + '</strong></td>' +
+          '<td>' + (f.especialidade || "") + '</td>' +
+          '<td>' + (f.telefone || "") + '</td>' +
+          '<td>' + (f.turno || "") + '</td>' +
+          '<td><span class="badge ' + (f.ativo ? "" : "inactive") + '">' + (f.ativo ? "Ativo" : "Inativo") + '</span></td>' +
+          '<td><div class="actions">' +
+            '<button type="button" class="btn-sm" onclick="editarFuncionario(\'' + f.id + '\')">Editar</button>' +
+            '<button type="button" class="btn-sm ' + (f.ativo ? "danger" : "") + '" onclick="alternarFuncionario(\'' + f.id + '\', ' + (!f.ativo) + ')">' + (f.ativo ? "Desativar" : "Ativar") + '</button>' +
+          '</div></td>' +
+          '</tr>';
+      }).join("");
+    }
+
+    function filtrarPorEstrelas(star, btn) {
+      var chips = document.querySelectorAll("#filtros-estrelas .chip");
+      for (var i = 0; i < chips.length; i++) chips[i].classList.remove("active");
+      if (btn) btn.classList.add("active");
+      filtroEstrelas = star;
+      renderizarAvaliacoes();
+    }
+
+    function renderizarAvaliacoes() {
+      var total = avaliacoes.length;
+      var soma = avaliacoes.reduce(function(acc, a) { return acc + Number(a.estrelas || 5); }, 0);
+      var media = total ? (soma / total).toFixed(1) + " / 5.0" : "-";
+
+      document.getElementById("kpi-media-estrelas").textContent = media;
+      document.getElementById("kpi-total-avaliacoes").textContent = total;
+
+      var filtradas = avaliacoes.filter(function(a) {
+        if (filtroEstrelas === "todas") return true;
+        return Number(a.estrelas || 5) === Number(filtroEstrelas);
+      });
+
+      var tbody = document.getElementById("tabela-avaliacoes");
+      if (!filtradas.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:28px;">Nenhuma avaliação encontrada nesta seleção.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtradas.map(function(a) {
+        var nota = Number(a.estrelas || 5);
+        return '<tr>' +
+          '<td><strong>' + (a.clienteNome || "Cliente") + '</strong></td>' +
+          '<td>' + (a.profissionalNome || "Geral") + '</td>' +
+          '<td><span class="badge star">' + nota + ' estrelas</span></td>' +
+          '<td>' + (a.comentario ? '"' + a.comentario + '"' : '<span style="color:var(--muted);">Sem comentário</span>') + '</td>' +
+          '<td><button type="button" class="btn-sm danger" onclick="excluirAvaliacao(\'' + a.id + '\')">Excluir</button></td>' +
+          '</tr>';
+      }).join("");
+    }
+
+    function excluirAvaliacao(id) {
+      if (confirm("Deseja remover esta avaliação?") && db) {
+        db.collection("avaliacoes").doc(id).delete();
+      }
+    }
+
+    function atualizarCheckboxesBarbeiros(selecionados) {
+      var container = document.getElementById("checkbox-barbeiros");
+      var ativos = funcionarios.filter(function(f) { return f.ativo; });
+      container.innerHTML = ativos.map(function(f) {
+        var checked = selecionados ? selecionados.indexOf(f.nome) !== -1 : true;
+        return '<label class="checkbox-item"><input type="checkbox" value="' + f.nome + '" ' + (checked ? "checked" : "") + ' /> ' + f.nome + '</label>';
+      }).join("");
+    }
+
+    function mudarVistaAgenda(vista) {
+      vistaAgenda = vista;
+      document.getElementById("btn-vista-diaria").classList.toggle("active", vista === "diaria");
+      document.getElementById("btn-vista-semanal").classList.toggle("active", vista === "semanal");
+      renderizarAgenda();
+    }
+
+    function atualizarStatus(id, status) {
+      if (db) db.collection("agendamentos").doc(id).update({ status: status });
+    }
+
+    function cancelarAgendamento(id) {
+      if (confirm("Deseja cancelar este agendamento?") && db) {
+        db.collection("agendamentos").doc(id).delete();
+      }
+    }
+
+    function abrirModalAgendamento() {
+      var selServ = document.getElementById("ag-servico");
+      var selProf = document.getElementById("ag-profissional");
+      selServ.innerHTML = servicos.filter(function(s) { return s.ativo; }).map(function(s) {
+        return '<option value="' + s.id + '">' + s.nome + ' - ' + moeda(s.preco) + ' (' + s.duracaoMin + ' min)</option>';
+      }).join("");
+      selProf.innerHTML = funcionarios.filter(function(f) { return f.ativo; }).map(function(f) {
+        return '<option value="' + f.id + '">' + f.nome + '</option>';
+      }).join("");
+      var hoje = new Date();
+      document.getElementById("ag-data").value = hoje.getFullYear() + "-" + String(hoje.getMonth() + 1).padStart(2, "0") + "-" + String(hoje.getDate()).padStart(2, "0");
+      document.getElementById("modal-agendamento").classList.add("open");
+    }
+
+    function fecharModalAgendamento() {
+      document.getElementById("modal-agendamento").classList.remove("open");
+    }
+
+    function abrirModalComanda(id) {
+      document.getElementById("comanda-agendamento-id").value = id;
+      document.getElementById("modal-comanda").classList.add("open");
+    }
+
+    function fecharModalComanda() {
+      document.getElementById("modal-comanda").classList.remove("open");
+    }
+
+    function abrirModalServico() {
+      document.getElementById("modal-servico-titulo").textContent = "Novo serviço";
+      document.getElementById("servico-id").value = "";
+      document.getElementById("form-servico").reset();
+      atualizarCheckboxesBarbeiros(null);
+      document.getElementById("modal-servico").classList.add("open");
+    }
+
+    function editarServico(id) {
+      var s = servicos.find(function(x) { return x.id === id; });
+      if (!s) return;
+      document.getElementById("modal-servico-titulo").textContent = "Editar serviço";
+      document.getElementById("servico-id").value = s.id;
+      document.getElementById("servico-nome").value = s.nome;
+      document.getElementById("servico-preco").value = s.preco;
+      document.getElementById("servico-duracao").value = s.duracaoMin;
+      atualizarCheckboxesBarbeiros(s.barbeiros || []);
+      document.getElementById("modal-servico").classList.add("open");
+    }
+
+    function fecharModalServico() {
+      document.getElementById("modal-servico").classList.remove("open");
+    }
+
+    function alternarServico(id, ativo) {
+      if (db) db.collection("servicos").doc(id).update({ ativo: ativo });
+    }
+
+    function abrirModalFuncionario() {
+      document.getElementById("modal-funcionario-titulo").textContent = "Novo funcionário";
+      document.getElementById("func-id").value = "";
+      document.getElementById("form-funcionario").reset();
+      document.getElementById("func-turno").value = "09:00 - 19:00";
+      document.getElementById("modal-funcionario").classList.add("open");
+    }
+
+    function editarFuncionario(id) {
+      var f = funcionarios.find(function(x) { return x.id === id; });
+      if (!f) return;
+      document.getElementById("modal-funcionario-titulo").textContent = "Editar funcionário";
+      document.getElementById("func-id").value = f.id;
+      document.getElementById("func-nome").value = f.nome;
+      document.getElementById("func-especialidade").value = f.especialidade || "";
+      document.getElementById("func-telefone").value = f.telefone || "";
+      document.getElementById("func-turno").value = f.turno || "09:00 - 19:00";
+      document.getElementById("modal-funcionario").classList.add("open");
+    }
+
+    function fecharModalFuncionario() {
+      document.getElementById("modal-funcionario").classList.remove("open");
+    }
+
+    function alternarFuncionario(id, ativo) {
+      if (db) db.collection("funcionarios").doc(id).update({ ativo: ativo });
+    }
+
+    function salvarAgendamento(e) {
+      e.preventDefault();
+      if (!db) {
+        alert("Banco de dados desconectado. Verifique sua internet ou regras do Firebase.");
+        return;
+      }
+      var sObj = servicos.find(function(s) { return s.id === document.getElementById("ag-servico").value; }) || {};
+      var fObj = funcionarios.find(function(f) { return f.id === document.getElementById("ag-profissional").value; }) || {};
+      var dataISO = document.getElementById("ag-data").value;
+      var partes = dataISO.split("-").map(Number);
+      var dt = new Date(partes[0], partes[1] - 1, partes[2]);
+      var diaNum = String(partes[2]).padStart(2, "0");
+      var mesTxt = MESES_CURTOS[partes[1] - 1];
+      var dataFormatada = DIAS_SEMANA[dt.getDay()] + ", " + diaNum + " " + mesTxt + " " + partes[0];
+      var docRef = db.collection("agendamentos").doc();
+
+      docRef.set({
+        id: docRef.id,
+        clienteNome: document.getElementById("ag-cliente").value,
+        clienteTelefone: document.getElementById("ag-telefone").value,
+        servico: { id: sObj.id || "", nome: sObj.nome || "", descricao: "", duracaoMin: Number(sObj.duracaoMin || 30), preco: Number(sObj.preco || 0) },
+        profissional: { id: fObj.id || "", nome: fObj.nome || "", especialidade: fObj.especialidade || "" },
+        dataISO: dataISO,
+        dataTexto: dataFormatada,
+        diaNumero: diaNum,
+        mesTexto: mesTxt.toUpperCase(),
+        horario: document.getElementById("ag-horario").value,
+        status: "Confirmado",
+        comanda: []
+      });
+
+      e.target.reset();
+      fecharModalAgendamento();
+    }
+
+    function salvarComanda(e) {
+      e.preventDefault();
+      if (!db) return;
+      var id = document.getElementById("comanda-agendamento-id").value;
+      var partes = document.getElementById("comanda-produto").value.split("|");
+      db.collection("agendamentos").doc(id).update({
+        comanda: firebase.firestore.FieldValue.arrayUnion({ nome: partes[0], preco: Number(partes[1]) })
+      });
+      fecharModalComanda();
+    }
+
+    function salvarServico(e) {
+      e.preventDefault();
+      if (!db) return;
+      var idExistente = document.getElementById("servico-id").value;
+      var docRef = idExistente ? db.collection("servicos").doc(idExistente) : db.collection("servicos").doc();
+      var marcados = Array.prototype.slice.call(document.querySelectorAll("#checkbox-barbeiros input:checked")).map(function(cb) { return cb.value; });
+
+      docRef.set({
+        id: docRef.id,
+        nome: document.getElementById("servico-nome").value,
+        preco: Number(document.getElementById("servico-preco").value),
+        duracaoMin: Number(document.getElementById("servico-duracao").value),
+        barbeiros: marcados,
+        ativo: true
+      }, { merge: true });
+
+      fecharModalServico();
+    }
+
+    function salvarFuncionario(e) {
+      e.preventDefault();
+      if (!db) return;
+      var idExistente = document.getElementById("func-id").value;
+      var docRef = idExistente ? db.collection("funcionarios").doc(idExistente) : db.collection("funcionarios").doc();
+
+      docRef.set({
+        id: docRef.id,
+        nome: document.getElementById("func-nome").value,
+        especialidade: document.getElementById("func-especialidade").value,
+        telefone: document.getElementById("func-telefone").value,
+        turno: document.getElementById("func-turno").value,
+        ativo: true
+      }, { merge: true });
+
+      fecharModalFuncionario();
+    }
+
+    renderizarFuncionarios();
+    renderizarServicos();
+    renderizarFiltrosBarbeiros();
+    renderizarAgenda();
+    renderizarAvaliacoes();
+    atualizarPainel();
+
+    try {
+      var firebaseConfig = {
+        apiKey: "AIzaSyB5Fi6TO1Hkc1Y3YNVVKb2C-c4slTNf2Co",
+        authDomain: "barbearia-26a18.firebaseapp.com",
+        projectId: "barbearia-26a18",
+        storageBucket: "barbearia-26a18.firebasestorage.app",
+        messagingSenderId: "1079086582872",
+        appId: "1:1079086582872:web:627911a7d2934b6bc58e2d",
+        measurementId: "G-7QPQPR2NVK"
+      };
+
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      db = firebase.firestore();
+
+      var statusEl = document.getElementById("firebase-status");
+      statusEl.textContent = "Online - Firebase";
+      statusEl.className = "status-pill online";
+
+      db.collection("funcionarios").onSnapshot(function(snap) {
+        if (snap.empty) {
+          funcionarios.forEach(function(f) { db.collection("funcionarios").doc(f.id).set(f); });
+          return;
+        }
+        funcionarios = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+        renderizarFuncionarios();
+        renderizarFiltrosBarbeiros();
+        atualizarPainel();
+      }, function(err) {
+        statusEl.textContent = "Erro banco: " + err.code;
+        statusEl.className = "status-pill erro";
+      });
+
+      db.collection("servicos").onSnapshot(function(snap) {
+        if (snap.empty) {
+          servicos.forEach(function(s) { db.collection("servicos").doc(s.id).set(s); });
+          return;
+        }
+        servicos = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+        renderizarServicos();
+      });
+
+      db.collection("agendamentos").onSnapshot(function(snap) {
+        if (!cargaInicial) {
+          snap.docChanges().forEach(function(change) {
+            var dados = change.doc.data();
+            if (change.type === "added") {
+              mostrarAlerta("Novo agendamento: " + dados.clienteNome + " (" + dados.horario + ")");
+            } else if (change.type === "removed") {
+              mostrarAlerta("Agendamento cancelado: " + dados.clienteNome);
+            }
+          });
+        }
+        cargaInicial = false;
+        agendamentos = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+        atualizarPainel();
+        renderizarAgenda();
+      });
+
+      db.collection("avaliacoes").onSnapshot(function(snap) {
+        avaliacoes = snap.docs.map(function(d) { return Object.assign({ id: d.id }, d.data()); });
+        renderizarAvaliacoes();
+      });
+    } catch (e) {
+      var st = document.getElementById("firebase-status");
+      st.textContent = "Sem conexão com Firebase";
+      st.className = "status-pill erro";
+    }
+  </script>
+</body>
+</html>
