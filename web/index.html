@@ -190,9 +190,9 @@
     .bar-chart {
       display: flex;
       align-items: flex-end;
-      gap: 14px;
-      height: 210px;
-      padding-top: 24px;
+      gap: 12px;
+      height: 230px;
+      padding-top: 28px;
       border-bottom: 1px solid var(--border);
     }
 
@@ -203,20 +203,35 @@
       align-items: center;
       height: 100%;
       justify-content: flex-end;
+      min-width: 44px;
     }
 
-    .bar-val { font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+    .bar-val {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+      white-space: nowrap;
+    }
 
     .bar-fill {
       width: 100%;
-      max-width: 48px;
+      max-width: 52px;
       background: var(--green);
       border-radius: 8px 8px 0 0;
-      min-height: 8px;
-      transition: height 0.3s ease;
+      min-height: 6px;
+      transition: height 0.3s ease, background 0.2s ease;
     }
 
-    .bar-label { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .bar-fill.empty-bar { background: var(--border); }
+    .bar-col:hover .bar-fill:not(.empty-bar) { background: var(--green-hover); }
+
+    .bar-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+      text-align: center;
+    }
 
     .table-card {
       background: var(--surface);
@@ -348,7 +363,6 @@
       <button class="btn-sm" onclick="document.getElementById('toast-alerta').classList.remove('show')">Fechar</button>
     </div>
 
-    <!-- SECÇÃO 1: PAINEL DE CONTROLE -->
     <section class="section active" id="sec-painel">
       <div class="section-header">
         <div>
@@ -359,7 +373,7 @@
 
       <div class="stats-grid">
         <div class="card">
-          <div class="stat-label">Agendamentos do dia</div>
+          <div class="stat-label">Agendamentos válidos</div>
           <div class="stat-value" id="kpi-agendamentos">0</div>
           <div class="stat-hint" id="kpi-concluidos">0 concluídos</div>
         </div>
@@ -383,20 +397,19 @@
       <div class="card">
         <div class="chart-header">
           <div>
-            <strong>Gráfico de Faturamento</strong>
-            <div style="font-size:12px;color:var(--muted);">Receita consolidada por período</div>
+            <strong>Gráfico de Faturamento Real</strong>
+            <div style="font-size:12px;color:var(--muted);" id="chart-subtitulo">Total no período: R$ 0,00</div>
           </div>
           <div class="period-btns" id="period-selector">
-            <button class="chip active" data-period="diario">Diário</button>
-            <button class="chip" data-period="semanal">Semanal</button>
-            <button class="chip" data-period="mensal">Mensal</button>
+            <button class="chip active" data-period="diario">Diário (7 dias)</button>
+            <button class="chip" data-period="semanal">Semanal (Mês)</button>
+            <button class="chip" data-period="mensal">Mensal (6 meses)</button>
           </div>
         </div>
         <div class="bar-chart" id="grafico-faturacao"></div>
       </div>
     </section>
 
-    <!-- SECÇÃO 2: AGENDA & COMANDAS -->
     <section class="section" id="sec-agenda">
       <div class="section-header">
         <div>
@@ -404,8 +417,8 @@
           <p class="page-subtitle">Inicie atendimentos, filtre por barbeiro e lance produtos na cadeira.</p>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="chip active" id="btn-vista-diaria" onclick="mudarVistaAgenda('diaria')">Vista Diária</button>
-          <button class="chip" id="btn-vista-semanal" onclick="mudarVistaAgenda('semanal')">Vista Semanal</button>
+          <button class="chip" id="btn-vista-diaria" onclick="mudarVistaAgenda('diaria')">Hoje</button>
+          <button class="chip active" id="btn-vista-semanal" onclick="mudarVistaAgenda('semanal')">Todos os dias</button>
           <button class="btn-primary" onclick="abrirModalAgendamento()">+ Novo agendamento</button>
         </div>
       </div>
@@ -432,7 +445,6 @@
       </div>
     </section>
 
-    <!-- SECÇÃO 3: CATÁLOGO DE SERVIÇOS E PREÇOS -->
     <section class="section" id="sec-catalogo">
       <div class="section-header">
         <div>
@@ -459,7 +471,6 @@
       </div>
     </section>
 
-    <!-- SECÇÃO 4: FUNCIONÁRIOS -->
     <section class="section" id="sec-funcionarios">
       <div class="section-header">
         <div>
@@ -487,7 +498,6 @@
     </section>
   </main>
 
-  <!-- MODAL NOVO AGENDAMENTO -->
   <div class="modal-backdrop" id="modal-agendamento">
     <div class="modal">
       <h3>Novo agendamento</h3>
@@ -510,7 +520,7 @@
         </div>
         <div class="field">
           <label>Data</label>
-          <input type="text" id="ag-data" value="Dom, 15 nov 2026" required />
+          <input type="date" id="ag-data" required />
         </div>
         <div class="field">
           <label>Horário</label>
@@ -524,7 +534,6 @@
     </div>
   </div>
 
-  <!-- MODAL SERVIÇO -->
   <div class="modal-backdrop" id="modal-servico">
     <div class="modal">
       <h3 id="modal-servico-titulo">Novo serviço</h3>
@@ -554,7 +563,6 @@
     </div>
   </div>
 
-  <!-- MODAL FUNCIONÁRIO -->
   <div class="modal-backdrop" id="modal-funcionario">
     <div class="modal">
       <h3 id="modal-funcionario-titulo">Novo funcionário</h3>
@@ -572,482 +580,4 @@
           <label>Telefone / WhatsApp</label>
           <input type="text" id="func-telefone" required placeholder="(92) 99999-9999" />
         </div>
-        <div class="field">
-          <label>Horário de trabalho</label>
-          <input type="text" id="func-turno" required value="09:00 - 19:00" />
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-sm" onclick="fecharModalFuncionario()">Cancelar</button>
-          <button type="submit" class="btn-primary">Salvar funcionário</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL COMANDA NA CADEIRA -->
-  <div class="modal-backdrop" id="modal-comanda">
-    <div class="modal">
-      <h3>Adicionar item à comanda</h3>
-      <form id="form-comanda">
-        <input type="hidden" id="comanda-agendamento-id" />
-        <div class="field">
-          <label>Produto ou extra na cadeira</label>
-          <select id="comanda-produto">
-            <option value="Pomada Modeladora Matte|35">Pomada Modeladora Matte · R$ 35,00</option>
-            <option value="Óleo para Barba|40">Óleo para Barba · R$ 40,00</option>
-            <option value="Balm Hidratante|38">Balm Hidratante · R$ 38,00</option>
-            <option value="Hidratação Capilar|25">Hidratação Capilar · R$ 25,00</option>
-          </select>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn-sm" onclick="fecharModalComanda()">Cancelar</button>
-          <button type="submit" class="btn-primary">Adicionar à comanda</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      onSnapshot,
-      doc,
-      setDoc,
-      updateDoc,
-      deleteDoc,
-      arrayUnion
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB5Fi6TO1Hkc1Y3YNVVKb2C-c4slTNf2Co",
-      authDomain: "barbearia-26a18.firebaseapp.com",
-      projectId: "barbearia-26a18",
-      storageBucket: "barbearia-26a18.firebasestorage.app",
-      messagingSenderId: "1079086582872",
-      appId: "1:1079086582872:web:627911a7d2934b6bc58e2d",
-      measurementId: "G-7QPQPR2NVK"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    let agendamentos = [];
-    let servicos = [];
-    let funcionarios = [];
-    let periodoGrafico = "diario";
-    let vistaAgenda = "semanal";
-    let filtroBarbeiro = "Todos";
-    let cargaInicial = true;
-
-    const moeda = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-
-    function mostrarAlerta(msg) {
-      document.getElementById("toast-texto").textContent = msg;
-      document.getElementById("toast-alerta").classList.add("show");
-    }
-
-    onSnapshot(collection(db, "funcionarios"), async (snap) => {
-      if (snap.empty) {
-        const iniciais = [
-          { id: "1", nome: "Rafael Costa", especialidade: "Cortes clássicos e barba", telefone: "(92) 99100-0001", turno: "09:00 - 19:00", ativo: true },
-          { id: "2", nome: "Diego Santos", especialidade: "Degradês e cortes modernos", telefone: "(92) 99100-0002", turno: "09:00 - 19:00", ativo: true },
-          { id: "3", nome: "Bruno Lima", especialidade: "Tesoura e visagismo", telefone: "(92) 99100-0003", turno: "10:00 - 20:00", ativo: true }
-        ];
-        for (const f of iniciais) await setDoc(doc(db, "funcionarios", f.id), f);
-        return;
-      }
-      funcionarios = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      renderizarFuncionarios();
-      atualizarCheckboxesBarbeiros();
-      renderizarFiltrosBarbeiros();
-      atualizarPainel();
-    });
-
-    onSnapshot(collection(db, "servicos"), async (snap) => {
-      if (snap.empty) {
-        const iniciais = [
-          { id: "1", nome: "Corte", preco: 45, duracaoMin: 30, ativo: true, barbeiros: ["Rafael Costa", "Diego Santos", "Bruno Lima"] },
-          { id: "2", nome: "Corte + barba", preco: 85, duracaoMin: 60, ativo: true, barbeiros: ["Rafael Costa", "Diego Santos"] },
-          { id: "3", nome: "Barba", preco: 40, duracaoMin: 30, ativo: true, barbeiros: ["Rafael Costa", "Bruno Lima"] },
-          { id: "4", nome: "Acabamento", preco: 20, duracaoMin: 15, ativo: true, barbeiros: ["Rafael Costa", "Diego Santos", "Bruno Lima"] }
-        ];
-        for (const s of iniciais) await setDoc(doc(db, "servicos", s.id), s);
-        return;
-      }
-      servicos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      renderizarServicos();
-    });
-
-    onSnapshot(collection(db, "agendamentos"), (snap) => {
-      if (!cargaInicial) {
-        snap.docChanges().forEach((change) => {
-          const dados = change.doc.data();
-          if (change.type === "added") {
-            mostrarAlerta(`Novo agendamento: ${dados.clienteNome} (${dados.horario})`);
-          } else if (change.type === "removed") {
-            mostrarAlerta(`Agendamento cancelado: ${dados.clienteNome}`);
-          }
-        });
-      }
-      cargaInicial = false;
-      agendamentos = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      atualizarPainel();
-      renderizarAgenda();
-    });
-
-    function totalAgendamento(item) {
-      const base = Number(item.servico?.preco || 0);
-      const extras = (item.comanda || []).reduce((acc, c) => acc + Number(c.preco || 0), 0);
-      return base + extras;
-    }
-
-    function atualizarPainel() {
-      const validos = agendamentos.filter((a) => a.status !== "Falta registrada");
-      const concluidos = validos.filter((a) => a.status === "Concluído");
-      const fatTotal = validos.reduce((acc, a) => acc + totalAgendamento(a), 0);
-      const ticket = validos.length ? fatTotal / validos.length : 0;
-      const ativos = funcionarios.filter((f) => f.ativo).length || 1;
-      const capacidade = ativos * 8;
-      const ocupacao = Math.min(100, Math.round((validos.length / capacidade) * 100));
-
-      document.getElementById("kpi-agendamentos").textContent = validos.length;
-      document.getElementById("kpi-concluidos").textContent = `${concluidos.length} concluídos`;
-      document.getElementById("kpi-ticket").textContent = moeda(ticket);
-      document.getElementById("kpi-ocupacao").textContent = `${ocupacao}%`;
-      document.getElementById("kpi-capacidade").textContent = `${ativos} funcionário(s) ativo(s) (${capacidade} vagas/dia)`;
-      document.getElementById("kpi-faturacao").textContent = moeda(fatTotal);
-
-      renderizarGrafico(fatTotal);
-    }
-
-    function renderizarGrafico(fatAtual) {
-      const series = {
-        diario: [
-          { label: "Seg", valor: 420 },
-          { label: "Ter", valor: 510 },
-          { label: "Qua", valor: 480 },
-          { label: "Qui", valor: 640 },
-          { label: "Sex", valor: 890 },
-          { label: "Sáb", valor: 1120 },
-          { label: "Dom", valor: Math.max(fatAtual, 320) }
-        ],
-        semanal: [
-          { label: "Sem 1", valor: 3450 },
-          { label: "Sem 2", valor: 3890 },
-          { label: "Sem 3", valor: 4120 },
-          { label: "Sem 4", valor: 4380 + fatAtual }
-        ],
-        mensal: [
-          { label: "Jul", valor: 14200 },
-          { label: "Ago", valor: 15100 },
-          { label: "Set", valor: 14800 },
-          { label: "Out", valor: 16400 },
-          { label: "Nov", valor: 17200 + fatAtual }
-        ]
-      };
-
-      const dados = series[periodoGrafico];
-      const max = Math.max(...dados.map((d) => d.valor), 1);
-      const container = document.getElementById("grafico-faturacao");
-
-      container.innerHTML = dados.map((d) => {
-        const altura = Math.round((d.valor / max) * 150);
-        return `
-          <div class="bar-col">
-            <div class="bar-val">${moeda(d.valor)}</div>
-            <div class="bar-fill" style="height:${altura}px"></div>
-            <div class="bar-label">${d.label}</div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function renderizarFiltrosBarbeiros() {
-      const ativos = funcionarios.filter((f) => f.ativo);
-      const container = document.getElementById("filtros-barbeiros");
-      const botoes = [{ nome: "Todos" }, ...ativos];
-      container.innerHTML = botoes.map((b) => `
-        <button class="chip ${filtroBarbeiro === b.nome ? "active" : ""}" onclick="filtrarAgendaProf('${b.nome}')">
-          ${b.nome === "Todos" ? "Todos os funcionários" : b.nome}
-        </button>
-      `).join("");
-    }
-
-    window.filtrarAgendaProf = (nome) => {
-      filtroBarbeiro = nome;
-      renderizarFiltrosBarbeiros();
-      renderizarAgenda();
-    };
-
-    function renderizarAgenda() {
-      let lista = [...agendamentos];
-      if (vistaAgenda === "diaria") {
-        lista = lista.filter((a) => (a.dataTexto || "").includes("15"));
-      }
-      if (filtroBarbeiro !== "Todos") {
-        lista = lista.filter((a) => a.profissional?.nome === filtroBarbeiro);
-      }
-
-      const tbody = document.getElementById("tabela-agenda");
-      if (!lista.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:28px;">Nenhum agendamento encontrado nesta visualização.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = lista.map((item) => {
-        const extrasTexto = (item.comanda || []).map((c) => `+ ${c.nome}`).join(", ");
-        return `
-          <tr>
-            <td><strong>${item.horario || ""}</strong><br><span style="font-size:12px;color:var(--muted);">${item.dataTexto || ""}</span></td>
-            <td><strong>${item.clienteNome || ""}</strong><br><span style="font-size:12px;color:var(--muted);">${item.clienteTelefone || ""}</span></td>
-            <td>
-              ${item.servico?.nome || ""}
-              ${extrasTexto ? `<div style="font-size:11px;color:var(--green);margin-top:2px;">${extrasTexto}</div>` : ""}
-            </td>
-            <td>${item.profissional?.nome || ""}</td>
-            <td><strong>${moeda(totalAgendamento(item))}</strong></td>
-            <td><span class="badge ${item.status === "Falta registrada" ? "warn" : ""}">${item.status || "Confirmado"}</span></td>
-            <td>
-              <div class="actions">
-                <button class="btn-sm" onclick="atualizarStatus('${item.id}', 'Em atendimento')">Iniciar</button>
-                <button class="btn-sm" onclick="abrirModalComanda('${item.id}')">+ Comanda</button>
-                <button class="btn-sm" onclick="atualizarStatus('${item.id}', 'Concluído')">Concluir</button>
-                <button class="btn-sm danger" onclick="cancelarAgendamento('${item.id}')">Cancelar</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join("");
-    }
-
-    function renderizarServicos() {
-      const tbody = document.getElementById("tabela-servicos");
-      tbody.innerHTML = servicos.map((s) => `
-        <tr>
-          <td><strong>${s.nome}</strong></td>
-          <td>${s.duracaoMin} min</td>
-          <td><strong>${moeda(s.preco)}</strong></td>
-          <td>${(s.barbeiros || []).map((b) => `<span class="barber-tag">${b}</span>`).join("")}</td>
-          <td><span class="badge ${s.ativo ? "" : "inactive"}">${s.ativo ? "Ativo" : "Desativado"}</span></td>
-          <td>
-            <div class="actions">
-              <button class="btn-sm" onclick="editarServico('${s.id}')">Editar</button>
-              <button class="btn-sm ${s.ativo ? "danger" : ""}" onclick="alternarServico('${s.id}', ${!s.ativo})">
-                ${s.ativo ? "Desativar" : "Ativar"}
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join("");
-    }
-
-    function renderizarFuncionarios() {
-      const tbody = document.getElementById("tabela-funcionarios");
-      tbody.innerHTML = funcionarios.map((f) => `
-        <tr>
-          <td><strong>${f.nome}</strong></td>
-          <td>${f.especialidade || ""}</td>
-          <td>${f.telefone || ""}</td>
-          <td>${f.turno || ""}</td>
-          <td><span class="badge ${f.ativo ? "" : "inactive"}">${f.ativo ? "Ativo" : "Inativo"}</span></td>
-          <td>
-            <div class="actions">
-              <button class="btn-sm" onclick="editarFuncionario('${f.id}')">Editar</button>
-              <button class="btn-sm ${f.ativo ? "danger" : ""}" onclick="alternarFuncionario('${f.id}', ${!f.ativo})">
-                ${f.ativo ? "Desativar" : "Ativar"}
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join("");
-    }
-
-    function atualizarCheckboxesBarbeiros(selecionados = null) {
-      const container = document.getElementById("checkbox-barbeiros");
-      const ativos = funcionarios.filter((f) => f.ativo);
-      container.innerHTML = ativos.map((f) => {
-        const checked = selecionados ? selecionados.includes(f.nome) : true;
-        return `<label class="checkbox-item"><input type="checkbox" value="${f.nome}" ${checked ? "checked" : ""} /> ${f.nome}</label>`;
-      }).join("");
-    }
-
-    document.querySelectorAll(".nav-tab").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".nav-tab").forEach((b) => b.classList.remove("active"));
-        document.querySelectorAll(".section").forEach((s) => s.classList.remove("active"));
-        btn.classList.add("active");
-        document.getElementById(`sec-${btn.dataset.tab}`).classList.add("active");
-      });
-    });
-
-    document.getElementById("period-selector").addEventListener("click", (e) => {
-      if (!e.target.classList.contains("chip")) return;
-      document.querySelectorAll("#period-selector .chip").forEach((c) => c.classList.remove("active"));
-      e.target.classList.add("active");
-      periodoGrafico = e.target.dataset.period;
-      atualizarPainel();
-    });
-
-    window.mudarVistaAgenda = (vista) => {
-      vistaAgenda = vista;
-      document.getElementById("btn-vista-diaria").classList.toggle("active", vista === "diaria");
-      document.getElementById("btn-vista-semanal").classList.toggle("active", vista === "semanal");
-      renderizarAgenda();
-    };
-
-    window.atualizarStatus = async (id, status) => {
-      await updateDoc(doc(db, "agendamentos", id), { status });
-    };
-
-    window.cancelarAgendamento = async (id) => {
-      if (confirm("Deseja cancelar este agendamento?")) {
-        await deleteDoc(doc(db, "agendamentos", id));
-      }
-    };
-
-    window.abrirModalAgendamento = () => {
-      const selServ = document.getElementById("ag-servico");
-      const selProf = document.getElementById("ag-profissional");
-      selServ.innerHTML = servicos.filter((s) => s.ativo).map((s) =>
-        `<option value="${s.id}">${s.nome} · ${moeda(s.preco)} (${s.duracaoMin} min)</option>`
-      ).join("");
-      selProf.innerHTML = funcionarios.filter((f) => f.ativo).map((f) =>
-        `<option value="${f.id}">${f.nome}</option>`
-      ).join("");
-      document.getElementById("modal-agendamento").classList.add("open");
-    };
-
-    window.fecharModalAgendamento = () => document.getElementById("modal-agendamento").classList.remove("open");
-
-    document.getElementById("form-agendamento").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const sObj = servicos.find((s) => s.id === document.getElementById("ag-servico").value) || {};
-      const fObj = funcionarios.find((f) => f.id === document.getElementById("ag-profissional").value) || {};
-      const docRef = doc(collection(db, "agendamentos"));
-
-      await setDoc(docRef, {
-        id: docRef.id,
-        clienteNome: document.getElementById("ag-cliente").value,
-        clienteTelefone: document.getElementById("ag-telefone").value,
-        servico: { id: sObj.id || "", nome: sObj.nome || "", descricao: "", duracaoMin: Number(sObj.duracaoMin || 30), preco: Number(sObj.preco || 0) },
-        profissional: { id: fObj.id || "", nome: fObj.nome || "", especialidade: fObj.especialidade || "" },
-        dataTexto: document.getElementById("ag-data").value,
-        diaNumero: "15",
-        mesTexto: "NOV",
-        horario: document.getElementById("ag-horario").value,
-        status: "Confirmado",
-        comanda: []
-      });
-
-      e.target.reset();
-      fecharModalAgendamento();
-    });
-
-    window.abrirModalComanda = (id) => {
-      document.getElementById("comanda-agendamento-id").value = id;
-      document.getElementById("modal-comanda").classList.add("open");
-    };
-
-    window.fecharModalComanda = () => document.getElementById("modal-comanda").classList.remove("open");
-
-    document.getElementById("form-comanda").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const id = document.getElementById("comanda-agendamento-id").value;
-      const [nome, preco] = document.getElementById("comanda-produto").value.split("|");
-      await updateDoc(doc(db, "agendamentos", id), {
-        comanda: arrayUnion({ nome, preco: Number(preco) })
-      });
-      fecharModalComanda();
-    });
-
-    window.abrirModalServico = () => {
-      document.getElementById("modal-servico-titulo").textContent = "Novo serviço";
-      document.getElementById("servico-id").value = "";
-      document.getElementById("form-servico").reset();
-      atualizarCheckboxesBarbeiros();
-      document.getElementById("modal-servico").classList.add("open");
-    };
-
-    window.editarServico = (id) => {
-      const s = servicos.find((x) => x.id === id);
-      if (!s) return;
-      document.getElementById("modal-servico-titulo").textContent = "Editar serviço";
-      document.getElementById("servico-id").value = s.id;
-      document.getElementById("servico-nome").value = s.nome;
-      document.getElementById("servico-preco").value = s.preco;
-      document.getElementById("servico-duracao").value = s.duracaoMin;
-      atualizarCheckboxesBarbeiros(s.barbeiros || []);
-      document.getElementById("modal-servico").classList.add("open");
-    };
-
-    window.fecharModalServico = () => document.getElementById("modal-servico").classList.remove("open");
-
-    window.alternarServico = async (id, ativo) => {
-      await updateDoc(doc(db, "servicos", id), { ativo });
-    };
-
-    document.getElementById("form-servico").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const idExistente = document.getElementById("servico-id").value;
-      const docRef = idExistente ? doc(db, "servicos", idExistente) : doc(collection(db, "servicos"));
-      const barbeiros = Array.from(document.querySelectorAll("#checkbox-barbeiros input:checked")).map((cb) => cb.value);
-
-      await setDoc(docRef, {
-        id: docRef.id,
-        nome: document.getElementById("servico-nome").value,
-        preco: Number(document.getElementById("servico-preco").value),
-        duracaoMin: Number(document.getElementById("servico-duracao").value),
-        barbeiros,
-        ativo: true
-      }, { merge: true });
-
-      fecharModalServico();
-    });
-
-    window.abrirModalFuncionario = () => {
-      document.getElementById("modal-funcionario-titulo").textContent = "Novo funcionário";
-      document.getElementById("func-id").value = "";
-      document.getElementById("form-funcionario").reset();
-      document.getElementById("func-turno").value = "09:00 - 19:00";
-      document.getElementById("modal-funcionario").classList.add("open");
-    };
-
-    window.editarFuncionario = (id) => {
-      const f = funcionarios.find((x) => x.id === id);
-      if (!f) return;
-      document.getElementById("modal-funcionario-titulo").textContent = "Editar funcionário";
-      document.getElementById("func-id").value = f.id;
-      document.getElementById("func-nome").value = f.nome;
-      document.getElementById("func-especialidade").value = f.especialidade || "";
-      document.getElementById("func-telefone").value = f.telefone || "";
-      document.getElementById("func-turno").value = f.turno || "09:00 - 19:00";
-      document.getElementById("modal-funcionario").classList.add("open");
-    };
-
-    window.fecharModalFuncionario = () => document.getElementById("modal-funcionario").classList.remove("open");
-
-    window.alternarFuncionario = async (id, ativo) => {
-      await updateDoc(doc(db, "funcionarios", id), { ativo });
-    };
-
-    document.getElementById("form-funcionario").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const idExistente = document.getElementById("func-id").value;
-      const docRef = idExistente ? doc(db, "funcionarios", idExistente) : doc(collection(db, "funcionarios"));
-
-      await setDoc(docRef, {
-        id: docRef.id,
-        nome: document.getElementById("func-nome").value,
-        especialidade: document.getElementById("func-especialidade").value,
-        telefone: document.getElementById("func-telefone").value,
-        turno: document.getElementById("func-turno").value,
-        ativo: true
-      }, { merge: true });
-
-      fecharModalFuncionario();
-    });
-  </script>
-</body>
-</html>
+        <div class="field
